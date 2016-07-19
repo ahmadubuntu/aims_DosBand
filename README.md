@@ -13,6 +13,7 @@ For this purpes you shuld use at list one line of "output band <start> <end> <np
 Note: a copy of "aims_band_ploting.pl" is provided but its license has not been set by its author.
 
 #  usage:
+         chmod +x aims_band_ploting.pl plot_dosband.sh
          ./aims_band_ploting.pl
          ./plot_dosband.sh [options]
 #  which options can be:
@@ -25,4 +26,8 @@ Note: a copy of "aims_band_ploting.pl" is provided but its license has not been 
                      -h =====> print this message
 #  for example:
           ./plot_dosband.sh [-bfile band_structure.dat] [-dfile KS_DOS_total.dat] [-erange -10 10] [-t 5]" 
-# These are default options.
+These are default options.
+
+# TO DO:
+         Add spin
+         Add partial DOS
