@@ -30,6 +30,7 @@ Note: a copy of "aims_band_ploting.pl" is provided but its license has not been 
 These are default options.
 
 # TO DO:
+         Better spin implementation
          Add partial DOS
          
 # Note:
