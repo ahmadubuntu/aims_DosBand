@@ -22,12 +22,12 @@ Note: a copy of "aims_band_ploting.pl" is provided but its license has not been 
                      -bfile BANDFILE
                      -dfile DOSFILE
                      -erange EMIN EMAX
-                     -t NUMBER
+                     -t NUMBER =====> the ticks multiples
+                     -s =====> spin
                      -h =====> print this message
 #  for example:
           ./plot_dosband.sh [-bfile band_structure.dat] [-dfile KS_DOS_total.dat] [-erange -10 10] [-t 5]" 
 These are default options.
 
 # TO DO:
-         Add spin
          Add partial DOS
