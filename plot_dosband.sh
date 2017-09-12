@@ -1,17 +1,17 @@
-#!/bin/bash
+#!/bin/bash 
 
 #################################################################################################################################################
 #  Band Structure and DOS plotter.														#
 #  Author: Ahmad Abdolmaleki															#
-#  Email: ahmadubuntu at gmail
-#  web: https://github.com/ahmadubuntu/aims_DosBand 
-#  This shell script is provided to plot Density Of States (DOS) and Band Structure od materials from outputfiles of FHI-aims code.		#
+#  Email: ahmadubuntu at gmail															#
+#  web: https://github.com/ahmadubuntu/aims_DosBand 												#
+#  This shell script is provided to plot Density Of States (DOS) and Band Structure of materials from outputfiles of FHI-aims code.		#
 #																		#
 #  For this purpes you shuld use at list one line of "output band <start> <end> <npoints> <starting_point_name> <ending_point_name> "		#
 #   or "output dos ..." or some of them in "control.in" input file of FHItaims. After running FHI-aims on this input file it gives		#
 #   one band structructure file as "bandXXXX.out" for each "output band ..." line and two DOS file as "KS_DOS_total.dat" and 			#
 #   "KS_DOS_total_raw.dat" which we use "KS_DOS_total.dat" for DOS but for band structure, we use "aims_band_ploting.pl" in FHI-aims		#
-#   utilities to merge those band files. Then use this script to plot DOS and Band structure via xmgrace and save picture as "DosBand.png"	#
+#   utilities to merge those band files. Then, use this script to plot DOS and Band structure via xmgrace and save picture as "DosBand.png"	#
 #																		#
 #																		#
 #  usage:																	#
@@ -23,7 +23,8 @@
 #                     -bfile BANDFILE														#
 #                     -dfile DOSFILE 														#
 #                     -erange EMIN EMAX	 													#
-#                     -t NUMBER															#
+#                     -t NUMBER =====> the ticks multiples											#
+#		      -s =====> spin
 #		      -h =====> print this message 												#
 #																		#
 #  for example:																	#
@@ -36,15 +37,16 @@
 
 ## default setting
 bandfile="band_structure.dat"
+bandupfile="band_structure_spin_up.dat"
+banddownfile="band_structure_spin_down.dat"
 dosfile="KS_DOS_total.dat"
-emin="-20"
-emax="5"
+emin="-10"
+emax="10"
 etick=$[(emax-emin)/5]
-
 
 band="true"
 dos="true"
-
+spn="false"
 ################################################################################################################ FUNCTIONS
 ##################################################
 function usage (){
@@ -59,6 +61,7 @@ function usage (){
                 echo "                     -dfile DOSFILE" ;
                 echo "                     -erange EMIN EMAX" ;
                 echo "                     -t NUMBER" ;
+		echo "                     -s ====> if spin != none";
 		echo "                     -h ====> print this message" ;
                 echo "" ;
                 echo "for example:" ;
@@ -68,12 +71,25 @@ function usage (){
 }
 ##################################################
 function ghsnb (){
-## grep number of high symmetry points
-nhsp=`grep "point for band" $bandfile | awk '{print $19}' | wc -l `
 
-hs=`grep "point for band" $bandfile | awk '{print $19}'| head -1`
-kname=`grep "point for band" $bandfile | awk '{print $7}' | sed -n "1p" `
+if [[ "$spn" == "false" ]]
+then
+	## grep number of high symmetry points
+	nhsp=`grep "point for band" $bandfile | awk '{print $19}' | wc -l `
 
+	hs=`grep "point for band" $bandfile | awk '{print $19}'| head -1`
+	# find kPoint name
+	kname=`grep "point for band" $bandfile | awk '{print $7}' | sed -n "1p" `
+elif [[ "$spn" == "true" ]]
+then
+	## grep number of high symmetry points
+	nhsp=`grep "point for band" $bandupfile | awk '{print $19}' | wc -l `
+
+	hs=`grep "point for band" $bandupfile | awk '{print $19}'| head -1`
+	# find kPoint name
+	kname=`grep "point for band" $bandupfile | awk '{print $7}' | sed -n "1p" `
+
+fi
 
 rm -f hyskp.dat
 cat > hyskp.dat<<EOF
@@ -85,14 +101,21 @@ echo $hs $kname > kp.dat
 
 for i in `seq 2 2 $nhsp`
 do
-hs=`grep "point for band" $bandfile | awk '{print $19}' | sed -n "${i}p" `
-kname=`grep "point for band" $bandfile | awk '{print $7}' | sed -n "${i}p" `
-echo $hs $kname >> kp.dat
-cat >> hyskp.dat<<EOF
+	if [[ "$spn" == "false" ]]
+	then
+		hs=`grep "point for band" $bandfile | awk '{print $19}' | sed -n "${i}p" `
+		kname=`grep "point for band" $bandfile | awk '{print $7}' | sed -n "${i}p" `
+	elif [[ "$spn" == "true" ]]
+	then
+        	hs=`grep "point for band" $bandupfile | awk '{print $19}' | sed -n "${i}p" `
+	        kname=`grep "point for band" $bandupfile | awk '{print $7}' | sed -n "${i}p" `
+	fi
+	echo $hs $kname >> kp.dat
+	cat >> hyskp.dat<<EOF
 ${hs}  -2000
 ${hs}   2000
 EOF
-echo "" >> hyskp.dat
+	echo "" >> hyskp.dat
 
 done
 
@@ -103,13 +126,27 @@ ki=`cat kp.dat  | sort -n -k1 | head -1 | awk '{print $1}' `
 kf=`cat kp.dat  | sort -nr -k1 | head -1 | awk '{print $1}'`
 
 ## find number of bands
-nbands=`tail -n 1 $bandfile | awk '{print NF}'`
-nbands=$[nbands-1]
+if [[ "$spn" == "false" ]]
+then
+        nbands=`tail -n 1 $bandfile | awk '{print NF}'`
+        nbands=$[nbands-1]
+elif [[ "$spn" == "true" ]]
+then
+	nbands=`tail -n 1 $bandupfile | awk '{print NF}'`
+	nbands=$[nbands-1]
+fi
 }
+
+
+
+
+
+
+
 ##################################################
 ## check if BAND files exist
 function chband (){
-if [[ ! -f $bandfile ]]
+if [[ ! -f $bandfile ]] && [[ ! -f $bandupfile ]]
 then
         echo "ERROR:"
         echo "      $bandfile does not exist!"
@@ -138,9 +175,13 @@ fi
 ##################################################
 function bandscript (){
 cat > script.bat <<EOF
+
+default linewidth 2.0
+
 with g0
+    default linewidth 2.0
     title size 1.500000
-    title "BAND STRUCTURE "
+##    title "BAND STRUCTURE "
     xaxis label "K-points directions"
     yaxis  label "Energy (eV)"
     world $ki, $emin, $kf, $emax
@@ -152,7 +193,7 @@ with g0
     yaxis  tick major linewidth 2.0
     xaxis  tick major grid on
     xaxis  tick minor linewidth 2.0
-    xaxis  tick minor linestyle 1
+    xaxis  tick minor linestyle 4
     xaxis  tick minor grid off
 EOF
 
@@ -215,6 +256,8 @@ with g0
     s0 line linewidth 2.0
 EOF
 }
+
+
 ##################################################
 function xmprint (){
 cat >> script.bat <<EOF
@@ -232,11 +275,14 @@ EOF
 ##################################################
 
 
+######################################################### main part
+
 no=$#
 i=1
 while [[ $i -le $no ]]
 do
 
+#	echo "optin $i = " ${!i}
 	case ${!i} in
 	"-jb" ) dos="false"; i=$[i+1] ;;
 	"-jd" ) band="false"; i=$[i+1] ;;
@@ -244,24 +290,37 @@ do
 	"-dfile" ) j=$[i+1]; dosfile=${!j} ; i=$[i+2] ;;
 	"-erange" ) j=$[i+1]; l=$[i+2]; emin=${!j} ; emax=${!l} ; i=$[i+3] ;;
 	"-t" ) j=$[i+1]; etick=${!j} ; i=$[i+2] ;;
+	"-s" ) spn="true"; i=$[i+1] ;;
+	"-d" ) debg="true"; i=$[i+1] ;;
 	"-h" ) usage ;;
 	* ) 
-		echo "ERROR: Wrong Optin!!!" ; usage ;;
+		echo "ERROR: Wrong Optin!!! There is no '${!i}' in the options" ; usage ;;
 	esac
 
 done
 
 
-if [[ "$band" == "true" ]]
+if [[ "$band" == "true" ]] && [[ "$spn" == "false" ]]
 then
 	chband
 	ghsnb
 	bandscript
 	bp="-graph 0 -viewport 0.15 0.15 1.15 0.85 -nxy  $bandfile"
 
+elif [[ "$band" == "true" ]] && [[ "$spn" == "true" ]]
+then
+        chband
+        ghsnb
+        bandscript
+        bp="-graph 0 -viewport 0.15 0.15 1.15 0.85 -nxy  $bandupfile -nxy $banddownfile"
+
 fi
 
-if [[ "$dos" == "true" ]]
+
+
+
+
+if [[ "$dos" == "true" ]] && [[ "$spn" == "false" ]]
 then
 	chdos
 	dmax=`sort -n -k2 $dosfile | tail -1 | awk '{print $2}'`
@@ -274,7 +333,25 @@ then
 		jdoscript
 		dp="-graph 0  -viewport 0.15 0.15 1.15 0.85  -block $dosfile -bxy 1:2"
 	fi
+
+elif [[ "$dos" == "true" ]] && [[ "$spn" == "true" ]]
+then
+        chdos
+        dmax=`sort -n -k2 $dosfile | tail -1 | awk '{print $2}'`
+
+        if [[ "$band" == "true" ]]
+        then
+                dosscript
+                dp="-graph 1  -viewport 1.2 0.15 1.4 0.85  -block $dosfile -bxy 2:1 -bxy 3:1"
+        else
+                jdoscript
+                dp="-graph 0  -viewport 0.15 0.15 1.15 0.85  -block $dosfile -bxy 1:2 -bxy 1:3"
+        fi
+
 fi
+
+
+
 
 xmprint
 
