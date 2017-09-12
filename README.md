@@ -32,6 +32,7 @@ These are default options.
 # TO DO:
          Better spin implementation
          Add partial DOS
+         Add Fermi level
          
 # Note:
          The licence just apply to the plot_dosband.sh file and not to the aims_band_ploting.pl which is part of FHI-aims utilites.
