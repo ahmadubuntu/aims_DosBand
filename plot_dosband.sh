@@ -193,7 +193,7 @@ with g0
     yaxis  tick major linewidth 2.0
     xaxis  tick major grid on
     xaxis  tick minor linewidth 2.0
-    xaxis  tick minor linestyle 4
+    xaxis  tick major linestyle 4
     xaxis  tick minor grid off
 EOF
 
