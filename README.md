@@ -31,3 +31,6 @@ These are default options.
 
 # TO DO:
          Add partial DOS
+         
+# Note:
+         The licence just apply to the plot_dosband.sh file and not to the aims_band_ploting.pl which is part of FHI-aims utilites.
