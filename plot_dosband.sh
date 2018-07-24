@@ -135,13 +135,13 @@ then
 	nbands=`tail -n 1 $bandupfile | awk '{print NF}'`
 	nbands=$[nbands-1]
 fi
+
+## create Fermi level data
+cat > ferb.dat <<EOF 
+$ki 0
+$kf 0
+EOF
 }
-
-
-
-
-
-
 
 ##################################################
 ## check if BAND files exist
@@ -193,8 +193,10 @@ with g0
     yaxis  tick major linewidth 2.0
     xaxis  tick major grid on
     xaxis  tick minor linewidth 2.0
-    xaxis  tick major linestyle 4
+    xaxis  tick major linestyle 1
     xaxis  tick minor grid off
+    s0 line linestyle 3
+    s0 legend "Fermi level"
 EOF
 
 if [[ "$spn" == "true" ]]
@@ -264,7 +266,13 @@ with g1
     frame linewidth 2.0
     xaxis  label char size 1.220000
     yaxis  label char size 1.220000
-    s0 line linewidth 2.0
+    s0 line linestyle 3
+    s1 line linewidth 2.0
+EOF
+
+cat >> ferd.dat <<EOF 
+0 0
+$dmax 0
 EOF
 }
 ##################################################
@@ -280,7 +288,13 @@ with g0
     frame linewidth 2.0
     xaxis  label char size 1.220000
     yaxis  label char size 1.220000
-    s0 line linewidth 2.0
+    s0 line linestyle 3
+    s1 line linewidth 2.0
+EOF
+
+cat >> ferd.dat <<EOF 
+0 0
+0 $dmax
 EOF
 }
 
@@ -332,14 +346,14 @@ then
 	chband
 	ghsnb
 	bandscript
-	bp="-graph 0 -viewport 0.15 0.15 1.15 0.85 -nxy  $bandfile"
+	bp="-graph 0 -viewport 0.15 0.15 1.15 0.85 ferb.dat -nxy $bandfile"
 
 elif [[ "$band" == "true" ]] && [[ "$spn" == "true" ]]
 then
         chband
         ghsnb
         bandscript
-        bp="-graph 0 -viewport 0.15 0.15 1.15 0.85 -nxy  $bandupfile -nxy $banddownfile"
+        bp="-graph 0 -viewport 0.15 0.15 1.15 0.85 ferb.dat -nxy $bandupfile -nxy $banddownfile"
 
 fi
 
@@ -355,10 +369,10 @@ then
 	if [[ "$band" == "true" ]]
 	then
 		dosscript
-		dp="-graph 1  -viewport 1.2 0.15 1.4 0.85  -block $dosfile -bxy 2:1"
+		dp="-graph 1  -viewport 1.2 0.15 1.4 0.85 ferd.dat -block $dosfile -bxy 2:1"
 	else
 		jdoscript
-		dp="-graph 0  -viewport 0.15 0.15 1.15 0.85  -block $dosfile -bxy 1:2"
+		dp="-graph 0  -viewport 0.15 0.15 1.15 0.85 ferd.dat -block $dosfile -bxy 1:2"
 	fi
 
 elif [[ "$dos" == "true" ]] && [[ "$spn" == "true" ]]
@@ -369,10 +383,10 @@ then
         if [[ "$band" == "true" ]]
         then
                 dosscript
-                dp="-graph 1  -viewport 1.2 0.15 1.4 0.85  -block $dosfile -bxy 2:1 -bxy 3:1"
+                dp="-graph 1  -viewport 1.2 0.15 1.4 0.85 ferd.dat -block $dosfile -bxy 2:1 -bxy 3:1"
         else
                 jdoscript
-                dp="-graph 0  -viewport 0.15 0.15 1.15 0.85  -block $dosfile -bxy 1:2 -bxy 1:3"
+                dp="-graph 0  -viewport 0.15 0.15 1.15 0.85 ferd.dat -block $dosfile -bxy 1:2 -bxy 1:3"
         fi
 
 fi
@@ -384,4 +398,4 @@ xmprint
 
 xmgrace -nosafe $bp $dp -batch script.bat
 
-rm -f kp.dat script.bat hyskp.dat
+rm -f kp.dat script.bat hyskp.dat ferb.dat ferd.dat
