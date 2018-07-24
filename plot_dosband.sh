@@ -197,23 +197,28 @@ with g0
     xaxis  tick minor grid off
 EOF
 
+if [[ "$spn" == "true" ]]
+then
+        echo 's1 legend "Up"' >> script.bat
+	echo 's2 legend "Down"' >> script.bat
+fi
+
 nkp=`cat kp.dat | wc -l`
 echo "    xaxis  tick spec type both" >> script.bat
 echo "    xaxis  tick spec $nkp" >> script.bat
 
 for i in `seq 1 $nkp`
 do
-j=$[i-1]
-hs=`cat kp.dat | sed -n "${i}p" | awk '{print $1}' `
-kname=`cat kp.dat | sed -n "${i}p" | awk '{print $2}' `
-echo "    xaxis  tick major $j, $hs " >> script.bat
-if [[ $kname == "Gamma" ]]
-then
-        echo "    xaxis  ticklabel $j, \"\xG\f{}\" " >> script.bat
-else
-        echo "    xaxis  ticklabel $j, \"$kname\" " >> script.bat
-fi
-
+	j=$[i-1]
+	hs=`cat kp.dat | sed -n "${i}p" | awk '{print $1}' `
+	kname=`cat kp.dat | sed -n "${i}p" | awk '{print $2}' `
+	echo "    xaxis  tick major $j, $hs " >> script.bat
+	if [[ $kname == "Gamma" ]]
+	then
+        	echo "    xaxis  ticklabel $j, \"\xG\f{}\" " >> script.bat
+	else
+        	echo "    xaxis  ticklabel $j, \"$kname\" " >> script.bat
+	fi
 done
 
 
@@ -223,6 +228,28 @@ do
         echo "    s$i line linewidth 2.0 " >> script.bat
 
 done
+
+if [[ "$spn" == "false" ]]
+then
+	for i in `seq 0 $bb`
+	do
+		 echo "    s$i line color 2 " >> script.bat
+	done
+	for i in `seq $[bb+1] $[bb*2]`
+	do
+		echo "    s$i line color 4 " >> script.bat
+	done
+else
+	for i in `seq 1 $[bb*4]`
+	do
+		if [ $[i%2] == 0 ]; then
+			echo "    s$i line color 2 " >> script.bat
+		else
+			echo "    s$i line color 4 " >> script.bat
+		fi
+	done
+fi
+
 }
 ##################################################
 function dosscript (){
